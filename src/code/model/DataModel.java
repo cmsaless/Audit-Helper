@@ -217,7 +217,7 @@ public class DataModel extends Observable {
 	 * @return list of results with the new filter applied to them
 	 */
 	public void refresh() {
-		filter(_unfilteredResults, _filterOutByCheckedStatus, _filterOutBlanks);
+		_filteredResults = filter(_unfilteredResults, _filterOutByCheckedStatus, _filterOutBlanks);
 		_resultsHaveChanged = true;
 		updateGUI();
 	}
