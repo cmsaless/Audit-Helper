@@ -62,6 +62,14 @@ public class PrimeGUI implements Observer {
 	private JButton _downloadButton;
 	private JTextField _urlDispField;
 
+	/**
+	 * The constructor creates an associative relationship between the
+	 * _dataModel instance variable and the passed in instance of the DataModel
+	 * class. Then we create a JFrame and add some various components to it
+	 * before setting its size and making it visible.
+	 * 
+	 * @param dataModel - instance of the DataModel class
+	 */
 	public PrimeGUI(DataModel dataModel) {
 
 		_dataModel = dataModel;
@@ -70,14 +78,43 @@ public class PrimeGUI implements Observer {
 
 		_frame.setJMenuBar(getMenuBar());
 		_frame.getContentPane().add(getControlPanel(), BorderLayout.NORTH);
-		_frame.getContentPane().add(getChatPanel(), BorderLayout.CENTER);
+		_frame.getContentPane().add(getDisplayPanel(), BorderLayout.CENTER);
 		_frame.getContentPane().add(getURLPanel(), BorderLayout.SOUTH);
 
 		_frame.setSize(new Dimension(1050, 775));
 		_frame.setLocationRelativeTo(null);
+		_frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		_frame.setVisible(true);
 	}
 
+	/**
+	 * This method creates a JMenuBar with various JMenus and JMenuItems to 
+	 * populate it. Here are some comments on the various components.
+	 * 
+	 * fileMenu:
+	 * --- initiateCollectItem: creates an instance of the CollectGUI
+	 * --- resetItem: creates an instance of the ResetGUI
+	 * --- offlineItem: if checked, we only use files we have saved locally;
+	 * 					if unchecked, we use the web driver to grab user info 
+	 * --- exitItem: saves the currently stored data and closes the program
+	 * 
+	 * filtersMenu:
+	 * --- showAllButton: tells the DataModel not to filter by checked status
+	 * --- showUncheckedButton: tells the DataModel to filter out checked users
+	 * --- showCheckedButton: tells the DataModel to filter out unchecked users
+	 * --- filterBlanksCheckBox: if checked, the DataModel will filter out
+	 * 							 blank pages
+	 * 
+	 * infoMenu:
+	 * --- _infoTotal: displays the total number of users
+	 * --- _infoUnchecked: displays the number of users who are unchecked
+	 * --- _infoChecked: displays the number of users who are checked
+	 * --- _infoBlanks: displays the number of users who have blank pages
+	 * --- _infoNonBlanks: displays the number of users who have non-blank 
+	 * 					   pages
+	 * 
+	 * @return the menu bar for the JFrame
+	 */
 	public JMenuBar getMenuBar() {
 
 		JMenuBar menuBar = new JMenuBar();
@@ -201,6 +238,26 @@ public class PrimeGUI implements Observer {
 		return menuBar;
 	}
 
+	/**
+	 * This method creates the panel that contains the search bar, the search
+	 * results, and various button. Here are some comments on the various
+	 * components:
+	 * 
+	 * --- textField: this JTextField serves as a search bar for finding names
+	 * --- searchButton: takes the text from textField and uses it to search
+	 * 					 for names
+	 * --- refreshButton: gets new results based on any changes to the filters
+	 * 					  that may have been applied
+	 * --- _checkLabel: displays a check mark if the currently selected person
+	 * 				   has been checked or just a blank box if they are not
+	 * --- _comboBox: contains the filtered search results from the DataModel
+	 * 				  object
+	 * --- _checkButton: sets the currently selected person's checked status to
+	 * 					 either true or false 
+	 * 
+	 * @return JPanel containing various components that allow search 
+	 * functionality 
+	 */
 	public JPanel getControlPanel() {
 
 		JPanel parentPanel = new JPanel();
@@ -283,18 +340,18 @@ public class PrimeGUI implements Observer {
 		return parentPanel;
 	}
 
-	public JPanel getChatPanel() {
+	public JPanel getDisplayPanel() {
 
-		JPanel chatPanel = new JPanel();
+		JPanel displayPanel = new JPanel();
 
 		_scrollPane = new JScrollPane(_textPane);
 		_scrollPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_ALWAYS);
 		_scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 		_scrollPane.setPreferredSize(new Dimension(1000, 600));
 
-		chatPanel.add(_scrollPane);
+		displayPanel.add(_scrollPane);
 
-		return chatPanel;
+		return displayPanel;
 	}
 
 	public JPanel getURLPanel() {

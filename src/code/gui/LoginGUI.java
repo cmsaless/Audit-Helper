@@ -70,7 +70,6 @@ public class LoginGUI {
 					}
 				} catch (SocketException | WebDriverException ex) {
 					actionPerformed(e);
-//					ex.printStackTrace();
 				}
 			} 
 		});

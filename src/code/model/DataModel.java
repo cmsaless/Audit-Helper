@@ -443,8 +443,8 @@ public class DataModel extends Observable {
 	 * Snipe-IT. First it calls removeEndSlashes to make sure there are no
 	 * additional forward slashes appended to the end of the URL. Then, it 
 	 * writes it to a text file so it will be the default file we use next time
-	 * (we don't want to have to type in the file name every time). Finally, the
-	 * instance variable _baseURL is set to the value of URL. 
+	 * (we don't want to have to type in the file name every time). Finally, 
+	 * the instance variable _baseURL is set to the value of URL. 
 	 * 
 	 * @param url - the URL for Snipe-IT
 	 */
