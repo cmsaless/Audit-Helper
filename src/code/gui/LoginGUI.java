@@ -11,6 +11,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 
 import org.openqa.selenium.WebDriverException;
@@ -24,15 +25,24 @@ public class LoginGUI {
 		JFrame frame = new JFrame("Login");
 
 		JPanel panel = new JPanel();
-		panel.setLayout(new GridLayout(3,1));
+		panel.setLayout(new GridLayout(4,1));
 
-		JLabel label = new JLabel("Enter password:");
+		JLabel label = new JLabel("Enter username and password:");
 		label.setHorizontalAlignment(SwingConstants.CENTER);
+		
+		JTextField userField = new JTextField();
 		
 		JPasswordField passwordField = new JPasswordField();
 		
 		JButton button = new JButton("Enter");
 
+		userField.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				passwordField.requestFocus();
+			}
+		});
+		
 		passwordField.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -49,28 +59,30 @@ public class LoginGUI {
 				boolean loginSuccessful = false;
 				
 				try {
-					loginSuccessful = dataModel.login(charArrayToString(array));
+					loginSuccessful = dataModel.login(userField.getText(), charArrayToString(array));
 					if (loginSuccessful) {
 						frame.dispose();
 						PrimeGUI primeGUI = new PrimeGUI(dataModel);
 						dataModel.addObserver(primeGUI);
 					} else {
 						label.setForeground(Color.RED);
-						label.setText("Incorrect password");
+						label.setText("Incorrect username and/or password");
 					}
 				} catch (SocketException | WebDriverException ex) {
 					actionPerformed(e);
+//					ex.printStackTrace();
 				}
 			} 
 		});
 
 		panel.add(label);
+		panel.add(userField);
 		panel.add(passwordField);
 		panel.add(button);
 
 		frame.add(panel);
 		
-		frame.setSize(250, 100);
+		frame.setSize(250, 150);
 		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.setVisible(true);

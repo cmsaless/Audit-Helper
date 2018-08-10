@@ -39,6 +39,7 @@ public class FileUtils {
 		HashMap<String, User> prevData;
 		try {
 			prevData = readFromCSV(fileName);
+			// check if file exists here
 		} catch (IOException e) {
 			prevData = new HashMap<String, User>();
 		}

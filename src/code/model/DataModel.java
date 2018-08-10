@@ -44,9 +44,10 @@ public class DataModel extends Observable {
 	private String _htmlLocation;
 
 	/**
-	 * The constructor initializes the array lists that will store results, 
-	 * grabs the name of the CSV file and the URL we're using, starts up the
-	 * web driver, and, finally, creates the landing GUI. 
+	 * The constructor starts the web driver, initializes the ArrayLists that 
+	 * will store the results, grabs the name of the CSV file we'll be reading 
+	 * and writing and the URL we'll go to in the web driver, and, finally, 
+	 * creates the landing GUI. 
 	 */
 	public DataModel() {
 
@@ -67,9 +68,11 @@ public class DataModel extends Observable {
 	}
 
 	/**
-	 * This method loads the data from the CSV file into the hash map and then
-	 * attempts to open the URL for Snipe-IT. If successful, the program goes 
-	 * to the login GUI.
+	 * This method loads the data from the CSV file we entered in the options 
+	 * menu into a HashMap and then attempts to open the URL for Snipe-IT. If 
+	 * successful, the program goes to the login GUI. If the program fails to
+	 * continue (either because the CSV file is invalid or the driver was
+	 * unable to reach Snipe-IT, a custom error message is shown.
 	 */
 	public void startup() {
 
@@ -90,30 +93,28 @@ public class DataModel extends Observable {
 	}
 
 	/**
-	 * This method takes the password entered into the password field from the
-	 * login GUI and attempts to login into Snipe-IT. Should an incorrect 
-	 * password be given, then the user will be notified in the login GUI.
-	 * Should it be successful (the URL of the login page is no longer the 
-	 * current URL), then the main primary GUI will be started. 
+	 * This method takes the strings of characters entered into the username 
+	 * and password fields from the login GUI and attempts to use them to log 
+	 * into Snipe-IT. Should an incorrect username or password be given, then 
+	 * the user will be notified in the login GUI. Should it be successful 
+	 * (meaning the URL of the login page is no longer the current URL), then 
+	 * the primary GUI will be started. 
 	 * 
 	 * @param password - string taken from the password field in the login GUI
 	 * @return true if login successful; false otherwise
 	 * @throws SocketException 
 	 */
-	public boolean login(String password) throws SocketException {
+	public boolean login(String username, String password) throws SocketException {
 
 		String loginURL = _driver.getCurrentUrl();
 
-		WebElement user = _driver.findElement(By.xpath(
-				"/html/body/form/div/div/div/div/div[2]/div/div/fieldset/div[1]/input"));
-		WebElement pswd = _driver.findElement(By.xpath(
-				"/html/body/form/div/div/div/div/div[2]/div/div/fieldset/div[2]/input"));
-		WebElement enter = _driver.findElement(By.xpath(
-				"/html/body/form/div/div/div/div/div[3]/button"));
-
+		WebElement user = _driver.findElement(By.name("username"));
+		WebElement pswd = _driver.findElement(By.name("password"));
+		WebElement enter = _driver.findElement(By.xpath("//button[text()= \"Login\"]"));
+		
 		user.clear();
-		user.sendKeys("scraper.scraper");
 		pswd.clear();
+		user.sendKeys(username);
 		pswd.sendKeys(password);
 		enter.click();
 		
@@ -124,20 +125,16 @@ public class DataModel extends Observable {
 	 * This method takes the query from the search bar in the primary GUI and
 	 * and does a partial search using every name in _data. It does this by 
 	 * calling a method called stripAndLower on both the query string and each
-	 * name in _data. stripAndLower simply removes all whitespace and 
-	 * lower cases all letters in a string. If a name in data contains the 
-	 * query, it is added to the array list of results, which is then filtered.
-	 * Lastly, a call to updateGUI is made.
+	 * name in _data. stripAndLower simply removes all whitespace and lower 
+	 * cases all letters in a string. If a name in _data contains the query, it 
+	 * is added to the ArrayList of results, which is then filtered. Lastly, a 
+	 * call to updateGUI is made.
 	 * 
 	 * @param query - string pulled from the search bar in the primary GUI
 	 * @return list of all names that contained the query
 	 */
 	public void generateListOfResults(String query) throws SocketException {
 
-		System.out.println("\nquery: " + query);
-		
-//		ArrayList<String> check = new ArrayList<>();
-		
 		_unfilteredResults.clear();
 		for (String name : _data.keySet()) {
 			if (ParsingUtils.stripAndLower(name).contains(ParsingUtils.stripAndLower(query))) {
@@ -147,9 +144,6 @@ public class DataModel extends Observable {
 		
 		_filteredResults = filter(_unfilteredResults, _filterOutByCheckedStatus, _filterOutBlanks);
 
-//		Collections.sort(check);
-//		System.out.println(check);
-		
 		_resultsHaveChanged = true;
 		updateGUI();
 	}
@@ -161,12 +155,14 @@ public class DataModel extends Observable {
 	 * not be added. Finally, the filtered results are sorted alphabetically.
 	 * 
 	 * @param results - list of names to be filtered
+	 * @param checkFilter - the check status that will be filtered out
+	 * @param blankFilter - if true, blank pages will be filtered out
 	 * @return list of names whose attributes are allowed through the filters
 	 */
-	private ArrayList<String> filter(ArrayList<String> results, Ternary checkFilter, boolean blankFilter) {
+	private ArrayList<String> filter(ArrayList<String> unfilteredResults, Ternary checkFilter, boolean blankFilter) {
 
 		ArrayList<String> filteredResults = new ArrayList<>();
-		for (String name : results) {
+		for (String name : unfilteredResults) {
 			boolean isBlank = _data.get(name).getPageIsBlank();
 			boolean isChecked = _data.get(name).getChecked();
 			if (blankFilter && isBlank || checkFilter == Ternary.CHECKED && isChecked || checkFilter == Ternary.UNCHECKED && !isChecked) {
@@ -180,6 +176,15 @@ public class DataModel extends Observable {
 		return filteredResults;
 	}
 	
+	/**
+	 * This method converts its Set of strings into an ArrayList and then calls
+	 * filter but with the ArrayList instead.
+	 * 
+	 * @param results - set of names to be filtered
+	 * @param checkFilter - the check status that will be filtered out
+	 * @param blankFilter - if true, blank pages will be filtered out
+	 * @return list of names whose attributes are allowed through the filters
+	 */
 	public ArrayList<String> filter(Set<String> results, Ternary checkFilter, boolean blankFilter) {
 		ArrayList<String> list = new ArrayList<>();
 		for (String name : results) {
@@ -187,34 +192,14 @@ public class DataModel extends Observable {
 		}
 		return filter(list, checkFilter, blankFilter);
 	}
-//	private ArrayList<String> filter() {
-//
-//		_filteredResults.clear();
-//		for (String name : _unfilteredResults) {
-//			boolean isBlank = _data.get(name).getPageIsBlank();
-//			boolean isChecked = _data.get(name).getChecked();
-//			if (_filterOutBlanks && isBlank ||
-//					_filterOutByCheckedStatus == Ternary.CHECKED && isChecked ||
-//					_filterOutByCheckedStatus == Ternary.UNCHECKED && !isChecked) {
-//
-//				continue;
-//			}
-//			_filteredResults.add(name);
-//		}
-//
-//		Collections.sort(_filteredResults);
-//
-//		return _filteredResults;
-//	}
-
+	
 	/**
-	 * This method is called when a new filter is selected the current list of
+	 * This method is called whenever the refresh button in the primary GUI is
+	 * clicked. If any new filters have been selected then the current list of
 	 * results needs to have them applied. It takes the original list of
-	 * results and calls the filter method on them again to apply the new
-	 * filter. Then it switches the _resultsHaveChanged variable to true and
-	 * calls the updateGUI method.
-	 * 
-	 * @return list of results with the new filter applied to them
+	 * results (_unfilteredResults) and calls the filter method on them again
+	 * to apply any of the new filters. Then it switches _resultsHaveChanged to
+	 * true and calls the updateGUI method.
 	 */
 	public void refresh() {
 		_filteredResults = filter(_unfilteredResults, _filterOutByCheckedStatus, _filterOutBlanks);
@@ -223,10 +208,11 @@ public class DataModel extends Observable {
 	}
 
 	/**
-	 * This method returns whether or not the passing name has been checked. 
+	 * This method returns true or false depending on the selected name having
+	 * been checked or not. 
 	 * 
 	 * @param selectedName - name of the person being checked
-	 * @return true is the person has been checked; false otherwise
+	 * @return true if the person has been checked; false otherwise
 	 */
 	public boolean getCheckedStatusFor(String selectedName) {
 		boolean checked = false;
@@ -238,8 +224,8 @@ public class DataModel extends Observable {
 	}
 
 	/**
-	 * This method reverses the checked status of the passed in name. Lastly,
-	 * it calls updateGUI.
+	 * This method reverses the checked status of the passed in name. Then, it
+	 * calls updateGUI.
 	 * 
 	 * @param selectedName - name of the person being checked
 	 */
@@ -264,31 +250,40 @@ public class DataModel extends Observable {
 	}
 
 	/**
-	 * This method grabs the HTML off the page of the passed in name. First it
-	 * goes to the person's page in the web driver. Then it pulls the HTML off
-	 * the page in plain text. It writes the HTML to the file, current.html, to
-	 * make it easier to paste into the text pane in the primary GUI. Finally,
-	 * it returns the HTML from current.html in URL form.
+	 * This method grabs the HTML off the page of the selected person and
+	 * returns the location of the HTML file on the system in URL format. First,
+	 * we check to make sure that the selected name is valid by seeing if _data
+	 * contains it. If it does, then we check whether we are offline or online.
+	 * If we are offline, then we simply read from the corresponding HTML file 
+	 * and get its location in URL form and set the _htmlLocation instance
+	 * variable to the path of the file.
+	 * 
+	 * If we are not offline then we get the corresponding page number for the 
+	 * selected person in _data and then have the web driver navigate to that
+	 * page and write the page's HTML to a file on the system (this way if we 
+	 * go offline in the future we can still have the most up-to-date info). 
+	 * Then we simply read from the corresponding HTML file and get its 
+	 * location in URL form and set the _htmlLocation instance variable to the
+	 * URL of the web page.
 	 * 
 	 * @param selectedName - name of the person being checked
 	 * @return the HTML from the person's page in URL form
 	 */
 	public String getHTMLFor(String selectedName) {
 
-		String retval = ""; 
-		URL htmlURL = FileUtils.readFromHTML("html/" + selectedName + ".html");
+		String retval = "";
 
 		if (_data.containsKey(selectedName)) {
+			URL htmlURL = FileUtils.readFromHTML("html/" + selectedName + ".html");
 			if (_offline) {
 				_htmlLocation = ParsingUtils.parseFilePath(htmlURL.getPath());
 			} else {
 				int index = _data.get(selectedName).getIndex();
 				String url = _baseURL + "/users/" + index + "/print";
-				_htmlLocation = url;
 				_driver.get(url);
 				String source = _driver.getPageSource();
 				FileUtils.writeToHTML("html/" + selectedName + ".html", source);
-				htmlURL = FileUtils.readFromHTML("html/" + selectedName + ".html");
+				_htmlLocation = url;
 			}
 			retval = htmlURL.toString();
 		}
@@ -296,30 +291,10 @@ public class DataModel extends Observable {
 		return retval;
 	}
 	
-	public int getTotalNumberOfUsers() {
-		return filter(_data.keySet(), Ternary.NEITHER, false).size();
-	}
-	
-	public int getNumberOfUnchecked() {
-		return filter(_data.keySet(), Ternary.CHECKED, false).size();
-	}
-	
-	public int getNumberOfChecked() {
-		return filter(_data.keySet(), Ternary.UNCHECKED, false).size();
-	}
-	
-	public int getNumberOfNonBlanks() {
-		return filter(_data.keySet(), Ternary.NEITHER, true).size();
-	}
-	
-	public int getNumberOfBlanks() {
-		return filter(_data.keySet(), Ternary.NEITHER, false).size() - 
-				filter(_data.keySet(), Ternary.NEITHER, true).size();
-	}
-	
 	/**
-	 * Opens the page of every user in Snipe-IT and stores their index (page
-	 * number) in a designated CSV file.
+	 * Initiates an instance of the Collect class which will go to every page
+	 * of every user in Snipe-IT and write their name, page number, and other 
+	 * information to a CSV file.
 	 */
 	public void beginCollecting(boolean overwrite) {
 		new Collect(_driver, this, overwrite);
@@ -332,15 +307,9 @@ public class DataModel extends Observable {
 	}
 	
 	/**
-	 * This method returns the URL of the page the web driver is currently on.
-	 * 
-	 * @return the URL of the current page
-	 * @throws SocketException
+	 * This method takes whatever is currently stored in _data and writes it to
+	 * the CSV being used.
 	 */
-	public String getPageURL() {
-		return _htmlLocation;
-	}
-
 	public void save() {
 		FileUtils.writeToCSV(_csvFileName, _data, true);
 	}
@@ -350,13 +319,47 @@ public class DataModel extends Observable {
 	 * web driver.
 	 */
 	public void saveAndExit() {
-		FileUtils.writeToCSV(_csvFileName, _data, true);
+		save();
 		_driver.close();
+	}
+	
+	/**
+	 * @return total number of users in Snipe-IT.
+	 */
+	public int getTotalNumberOfUsers() {
+		return filter(_data.keySet(), Ternary.NEITHER, false).size();
+	}
+	
+	/**
+	 * @return total number of users in Snipe-IT that are unchecked.
+	 */
+	public int getNumberOfUnchecked() {
+		return filter(_data.keySet(), Ternary.CHECKED, false).size();
+	}
+	
+	/**
+	 * @return total number of users in Snipe-IT that are checked.
+	 */
+	public int getNumberOfChecked() {
+		return filter(_data.keySet(), Ternary.UNCHECKED, false).size();
+	}
+	
+	/**
+	 * @return total number of users in Snipe-IT that have non-blanks pages.
+	 */
+	public int getNumberOfNonBlanks() {
+		return filter(_data.keySet(), Ternary.NEITHER, true).size();
+	}
+	
+	/**
+	 * @return total number of users in Snipe-IT that have blank pages.
+	 */
+	public int getNumberOfBlanks() {
+		return filter(_data.keySet(), Ternary.NEITHER, false).size() - 
+				filter(_data.keySet(), Ternary.NEITHER, true).size();
 	}
 
 	/**
-	 * This method returns the original, unfiltered results.
-	 * 
 	 * @return the list of original, unfiltered results.
 	 */
 	public ArrayList<String> getUnfilteredResults() {
@@ -364,8 +367,6 @@ public class DataModel extends Observable {
 	}
 
 	/**
-	 * This method returns the list of filtered results.
-	 * 
 	 * @return the list of filtered results
 	 */
 	public ArrayList<String> getFilteredResults() {
@@ -373,8 +374,13 @@ public class DataModel extends Observable {
 	}
 
 	/**
-	 * Returns an ImageIcon object that displays the "blankcheck.png" picture.
-	 * 
+	 * @return the base URL of Snipe-IT (http://<###.###.###.###>)
+	 */
+	public String getBaseURL() {
+		return _baseURL;
+	}
+	
+	/**
 	 * @return ImageIcon object with "blankcheck.png"
 	 */
 	public ImageIcon getBlankCheckImage() {
@@ -382,8 +388,6 @@ public class DataModel extends Observable {
 	}
 
 	/**
-	 * Returns an ImageIcon object that displays the "check.png" picture.
-	 * 
 	 * @return ImageIcon object with "check.png"
 	 */
 	public ImageIcon getCheckImage() {
@@ -412,45 +416,35 @@ public class DataModel extends Observable {
 	}
 
 	/**
-	 * Returns the file name of the CSV file currently being used.
-	 * 
-	 * @return name of the CSV file
-	 */
-	public String getFileName() {
-		return _csvFileName;
-	}
-
-	/**
-	 * Returns the URL of Snipe-IT.
-	 * 
-	 * @return URL of the CSV file
-	 * @throws SocketException
-	 */
-	public String getBaseURL() {
-		return _baseURL;
-	}
-
-	/**
 	 * This method sets the passed in string as the new CSV file to be used.
 	 * First it calls formatFileName to make sure the file has the proper
-	 * ".csv" extension. Then, it writes it to a text file we can access later 
-	 * if need be. Finally, the instance variable _fileName is set to the value 
-	 * of newFileName.
+	 * ".csv" extension. Then, it writes it to a text file so it will be the
+	 * default file we use next time (we don't want to have to type in the file
+	 * name every time). Finally, the instance variable, _fileName, is set to the 
+	 * value of newFileName.
 	 * 
-	 * @param newFileName - the name of the designated CSV file
+	 * @param newFileName - the name of the new CSV file to be used
 	 */
 	public void setFileName(String newCSVFileName) {
 		newCSVFileName = ParsingUtils.formatCSVFileName(newCSVFileName);
 		FileUtils.changeFileSettings(newCSVFileName);
 		_csvFileName = newCSVFileName;
 	}
+	
+	/**
+	 * @return the file name of the CSV file currently being used
+	 */
+	public String getFileName() {
+		return _csvFileName;
+	}
 
 	/**
 	 * This method sets the passed in string as the new URL to be used for
 	 * Snipe-IT. First it calls removeEndSlashes to make sure there are no
 	 * additional forward slashes appended to the end of the URL. Then, it 
-	 * writes it to a text file we can access later if need be. Finally, the
-	 * instance variable _baseURL is set to the value of url. 
+	 * writes it to a text file so it will be the default file we use next time
+	 * (we don't want to have to type in the file name every time). Finally, the
+	 * instance variable _baseURL is set to the value of URL. 
 	 * 
 	 * @param url - the URL for Snipe-IT
 	 */
@@ -459,18 +453,35 @@ public class DataModel extends Observable {
 		FileUtils.changeURLSettings(url);
 		_baseURL = url;
 	}
+	
+	/**
+	 * @return the URL of the page the web driver is currently on
+	 */
+	public String getPageURL() {
+		return _htmlLocation;
+	}
 
+	/**
+	 * This method sets whether or not we want to be online or offline.
+	 * 
+	 * @param b - if true, then go offline; if false, stay online
+	 */
 	public void setOffline(boolean b) {
 		_offline = b;
 	}
 
+	/**
+	 * @return true if offline; false otherwise
+	 */
 	public boolean getOffline() {
 		return _offline;
 	}
 
 	/**
-	 * This method lets its observers (the primary GUI) that it should check
-	 * for any changes in this class and display them in the user interface.
+	 * This method notifies its observers (the primary GUI) that it should 
+	 * check for any changes in this class and display them in the user 
+	 * interface. 
+	 * 
 	 * Note: the _resultsHaveChanged instance variable is switched back to 
 	 * false before notifyObservers is called. This is because there may 
 	 * additional calls to updateGUI while the primary GUI is updating its

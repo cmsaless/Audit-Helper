@@ -17,7 +17,7 @@ public class SplashScreen {
 	private final JFrame _splashScreen;
 	
 	/**
-	 * The constructor creates a splash screen with some text and picture.
+	 * The constructor creates a splash screen with some text and (if found) a picture.
 	 */
 	public SplashScreen() {
 		
@@ -27,8 +27,13 @@ public class SplashScreen {
 		
 		JLabel textLabel = new JLabel("<html><center>Starting up...<br><br>This fantastic program was made in the summer<br>of 2018 by our beloved intern, Chris Saless!</html>", SwingConstants.CENTER);
 		
-		ImageIcon icon = new ImageIcon(getClass().getResource(FileUtils.FACE_PIC_LOC));
-		JLabel picLabel = new JLabel(icon);
+		JLabel picLabel = new JLabel();
+		try {
+			ImageIcon icon = new ImageIcon(getClass().getResource(FileUtils.FACE_PIC_LOC));
+			picLabel.setIcon(icon);
+		} catch (NullPointerException e) {
+			picLabel.setText("***No Pic***");
+		}
 		
 		panel.add(textLabel, BorderLayout.CENTER);
 		panel.add(picLabel, BorderLayout.SOUTH);

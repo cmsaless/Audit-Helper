@@ -334,7 +334,7 @@ public class PrimeGUI implements Observer {
 
 	public void displayInformation(String selectedName) throws IOException {
 
-		_dataModel.getHTMLFor(selectedName);
+//		_dataModel.getHTMLFor(selectedName);
 
 		_textPane = new JTextPane();
 		_textPane.setEditable(false);
