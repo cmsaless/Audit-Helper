@@ -53,7 +53,7 @@ public class DataModel extends Observable {
 
 		_driver = new FirefoxDriver();
 		_driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
-		_driver.manage().window().setPosition(new Point(-2000, 0));
+//		_driver.manage().window().setPosition(new Point(-2000, 0));
 
 		_filteredResults = new ArrayList<>();
 		_unfilteredResults = new ArrayList<>();
@@ -103,19 +103,30 @@ public class DataModel extends Observable {
 	 * @param password - string taken from the password field in the login GUI
 	 * @return true if login successful; false otherwise
 	 * @throws SocketException 
+	 * @throws InterruptedException 
 	 */
-	public boolean login(String username, String password) throws SocketException {
+	public boolean login(String username, String password) throws SocketException, InterruptedException {
 
 		String loginURL = _driver.getCurrentUrl();
 
 		WebElement user = _driver.findElement(By.name("username"));
-		WebElement pswd = _driver.findElement(By.name("password"));
+//		WebElement pswd = _driver.findElement(By.name("password"));
+		WebElement pswd = _driver.findElement(By.xpath("//input[@name=\"password\"]"));
 		WebElement enter = _driver.findElement(By.xpath("//button[text()= \"Login\"]"));
 		
 		user.clear();
 		pswd.clear();
+		
+		user.click();
 		user.sendKeys(username);
+		
+		Thread.sleep(1000);
+		
+		pswd.click();
+//		pswd.sendKeys("");pswd.sendKeys("");pswd.sendKeys("");pswd.sendKeys("");
 		pswd.sendKeys(password);
+		
+		Thread.sleep(500);
 		enter.click();
 		
 		return !loginURL.equals(_driver.getCurrentUrl());

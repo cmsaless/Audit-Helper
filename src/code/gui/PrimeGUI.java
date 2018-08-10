@@ -340,6 +340,13 @@ public class PrimeGUI implements Observer {
 		return parentPanel;
 	}
 
+	/**
+	 * This method creates and returns a JPanel that contains a JScrollPane.
+	 * When we select and user in order to see their page, this is where the
+	 * HTML will be displayed. 
+	 * 
+	 * @return a JPanel that contains a scrollPane
+	 */
 	public JPanel getDisplayPanel() {
 
 		JPanel displayPanel = new JPanel();
@@ -354,6 +361,13 @@ public class PrimeGUI implements Observer {
 		return displayPanel;
 	}
 
+	/**
+	 * This method creates the panel that contains the download button and a
+	 * label that shows the location (either the URL or the file path) from
+	 * where we got the HTML. Here are some comments on the various components:
+	 * 
+	 * @return
+	 */
 	public JPanel getURLPanel() {
 
 		JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT));
