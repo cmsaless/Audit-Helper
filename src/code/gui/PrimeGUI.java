@@ -432,6 +432,7 @@ public class PrimeGUI implements Observer {
 			for (String name : _dataModel.getFilteredResults()) {
 				_comboBox.addItem(name);
 			}
+			System.out.println("# of results: " + _comboBox.getItemCount());
 		}
 
 		_infoTotal.setText(" Total: " + _dataModel.getTotalNumberOfUsers());

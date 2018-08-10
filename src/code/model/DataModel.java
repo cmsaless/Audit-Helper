@@ -52,8 +52,8 @@ public class DataModel extends Observable {
 	public DataModel() {
 
 		_driver = new FirefoxDriver();
-		_driver.manage().timeouts().implicitlyWait(2, TimeUnit.SECONDS);
-//		_driver.manage().window().setPosition(new Point(-2000, 0));
+		_driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+		//		_driver.manage().window().setPosition(new Point(-2000, 0));
 
 		_filteredResults = new ArrayList<>();
 		_unfilteredResults = new ArrayList<>();
@@ -110,25 +110,33 @@ public class DataModel extends Observable {
 		String loginURL = _driver.getCurrentUrl();
 
 		WebElement user = _driver.findElement(By.name("username"));
-//		WebElement pswd = _driver.findElement(By.name("password"));
-		WebElement pswd = _driver.findElement(By.xpath("//input[@name=\"password\"]"));
+		WebElement pswd = _driver.findElement(By.name("password"));
+		//		WebElement pswd = _driver.findElement(By.xpath("/html/body/form/div/div/div/div/div[2]/div/div/fieldset/div[2]/input"));
 		WebElement enter = _driver.findElement(By.xpath("//button[text()= \"Login\"]"));
-		
+
 		user.clear();
 		pswd.clear();
-		
+
 		user.click();
 		user.sendKeys(username);
-		
-		Thread.sleep(1000);
-		
-		pswd.click();
-//		pswd.sendKeys("");pswd.sendKeys("");pswd.sendKeys("");pswd.sendKeys("");
-		pswd.sendKeys(password);
-		
+
+		Thread.sleep(500);
+
+		if (!pswd.equals("")) {
+			while (true) {
+				System.out.println("In the loop with: " + password);
+				pswd.clear();
+				pswd.click();
+				pswd.sendKeys(password);
+				if (!pswd.getAttribute("value").equals("")) {
+					break;
+				}
+			}
+		}
+
 		Thread.sleep(500);
 		enter.click();
-		
+
 		return !loginURL.equals(_driver.getCurrentUrl());
 	}
 
@@ -152,7 +160,7 @@ public class DataModel extends Observable {
 				_unfilteredResults.add(name);
 			}
 		}
-		
+
 		_filteredResults = filter(_unfilteredResults, _filterOutByCheckedStatus, _filterOutBlanks);
 
 		_resultsHaveChanged = true;
@@ -183,10 +191,10 @@ public class DataModel extends Observable {
 		}
 
 		Collections.sort(filteredResults);
-		
+
 		return filteredResults;
 	}
-	
+
 	/**
 	 * This method converts its Set of strings into an ArrayList and then calls
 	 * filter but with the ArrayList instead.
@@ -203,7 +211,7 @@ public class DataModel extends Observable {
 		}
 		return filter(list, checkFilter, blankFilter);
 	}
-	
+
 	/**
 	 * This method is called whenever the refresh button in the primary GUI is
 	 * clicked. If any new filters have been selected then the current list of
@@ -301,7 +309,7 @@ public class DataModel extends Observable {
 
 		return retval;
 	}
-	
+
 	/**
 	 * Initiates an instance of the Collect class which will go to every page
 	 * of every user in Snipe-IT and write their name, page number, and other 
@@ -316,7 +324,7 @@ public class DataModel extends Observable {
 			_data = backup;
 		}
 	}
-	
+
 	/**
 	 * This method takes whatever is currently stored in _data and writes it to
 	 * the CSV being used.
@@ -333,35 +341,35 @@ public class DataModel extends Observable {
 		save();
 		_driver.close();
 	}
-	
+
 	/**
 	 * @return total number of users in Snipe-IT.
 	 */
 	public int getTotalNumberOfUsers() {
 		return filter(_data.keySet(), Ternary.NEITHER, false).size();
 	}
-	
+
 	/**
 	 * @return total number of users in Snipe-IT that are unchecked.
 	 */
 	public int getNumberOfUnchecked() {
 		return filter(_data.keySet(), Ternary.CHECKED, false).size();
 	}
-	
+
 	/**
 	 * @return total number of users in Snipe-IT that are checked.
 	 */
 	public int getNumberOfChecked() {
 		return filter(_data.keySet(), Ternary.UNCHECKED, false).size();
 	}
-	
+
 	/**
 	 * @return total number of users in Snipe-IT that have non-blanks pages.
 	 */
 	public int getNumberOfNonBlanks() {
 		return filter(_data.keySet(), Ternary.NEITHER, true).size();
 	}
-	
+
 	/**
 	 * @return total number of users in Snipe-IT that have blank pages.
 	 */
@@ -390,7 +398,7 @@ public class DataModel extends Observable {
 	public String getBaseURL() {
 		return _baseURL;
 	}
-	
+
 	/**
 	 * @return ImageIcon object with "blankcheck.png"
 	 */
@@ -441,7 +449,7 @@ public class DataModel extends Observable {
 		FileUtils.changeFileSettings(newCSVFileName);
 		_csvFileName = newCSVFileName;
 	}
-	
+
 	/**
 	 * @return the file name of the CSV file currently being used
 	 */
@@ -464,7 +472,7 @@ public class DataModel extends Observable {
 		FileUtils.changeURLSettings(url);
 		_baseURL = url;
 	}
-	
+
 	/**
 	 * @return the URL of the page the web driver is currently on
 	 */

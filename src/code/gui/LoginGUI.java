@@ -59,22 +59,26 @@ public class LoginGUI {
 				boolean loginSuccessful = false;
 				
 				try {
+					System.out.println(charArrayToString(array));
 					loginSuccessful = dataModel.login(userField.getText(), charArrayToString(array));
 					if (loginSuccessful) {
+						passwordField.setText("");
 						frame.dispose();
 						PrimeGUI primeGUI = new PrimeGUI(dataModel);
 						dataModel.addObserver(primeGUI);
 					} else {
+						passwordField.setText("");
 						label.setForeground(Color.RED);
 						label.setText("Incorrect username and/or password");
 					}
 				} catch (SocketException | WebDriverException ex) {
+					System.out.println("Socket Error");
+					passwordField.setText(charArrayToString(array));
 					actionPerformed(e);
-//					ex.printStackTrace();
 				} catch (InterruptedException ex1) {
 					ex1.printStackTrace();
 				}
-			} 
+			}
 		});
 
 		panel.add(label);
